@@ -189,7 +189,7 @@ dim(training25)
 plot(training75$classe, col="green", main="Histogram of output variable classe ", xlab="classe", ylab="Frequency")
 ```
 
-![](PracticalMachineLearningAssignment_files/figure-markdown_github/Subsetting%20Training%20Dataset-1.png)
+![](figures/Subsetting Training Dataset-1.png)
 
 The Histogram of Classe variable shows that the frequency is almost similar for the mistaken methods of Dumbell press(i.e. levels B,C,D,E). However the prefect way of dumbell press(Level A) is the most frequent while level D is the least.
 
@@ -204,7 +204,7 @@ ModDecisionTree<-rpart(classe~.,data=training75,method="class")
 rpart.plot(ModDecisionTree, main="Classification Tree", extra=102, under=TRUE, faclen=0)
 ```
 
-![](PracticalMachineLearningAssignment_files/figure-markdown_github/Decision%20Tree-1.png)
+![](figures/Decision Tree-1.png)
 
 Prediction using Decision Tree
 ------------------------------
