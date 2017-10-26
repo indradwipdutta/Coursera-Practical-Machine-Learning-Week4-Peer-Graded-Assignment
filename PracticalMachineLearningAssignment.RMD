@@ -1,0 +1,268 @@
+---
+title: "Practical Machine Learning sAssignment"
+author: "Indradwip Dutta"
+date: "October 25, 2017"
+output:
+  #pdf_document: default
+  #documentclass: landscape
+  #classoption: letterpaper
+   
+  ##fontsize: 11pt
+  #geometry: 1in
+  ##"left=1cm,right=1cm,top=1cm,bottom=1cm"
+  html_document: default
+  #md_document:
+    #variant: markdown_github
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Predicting the effectiveness of Physical Activities performed(like lifting,etc.) using data collected from accelerometers
+
+## Background
+
+It is now possible to collect a large amount of data about personal activity Using devices such as Jawbone Up, Nike FuelBand, and Fitbit. These type of devices are part of the quantified self movement - a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. 
+
+In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://web.archive.org/web/20161224072740/http:/groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset).
+
+##Data
+
+###The training data for this project are available here:
+
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv
+
+###The test data are available here:
+
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
+
+
+##Brief Description of Data
+
+*as from the HAR Dataset from the paper "Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013."*
+
+The outcome variable *classe*, is a factor with 5 levels. Six young health participants were asked to perform one set of 10 repetitions of the Unilateral Dumbbell Biceps Curl in five different fashions:
+
+*Class A*=exactly according to the specification 
+
+*Class B*=throwing the elbows to the front 
+
+*Class C*=lifting the dumbbell only halfway 
+
+*Class D*=lowering the dumbbell only halfway 
+
+*Class E*=throwing the hips to the front 
+
+Class A corresponds to the specified execution of the exercise, while the other 4 classes correspond to common mistakes." 
+
+##Cross-validation
+Performed by subsampling training data set randomly without replacement into 2 subsamples: subTraining data (75% of the original Training data set) and subTesting data (25%). The Models are fitted on the subTraining data set, and tested on the subTesting data. The most accurate model used to test the original Testing data set.
+
+##Expected out-of-sample error
+
+outcome variable "classe" is an unordered factor variable. Thus, we can choose our error type as Accuracy
+
+The expected out-of-sample error is judged by accuracy in the cross-validation data. 
+
+Accuracy= (correct classified observation / total sample in the subTesting data set)x100%.
+
+Out-of-sample error=No.of missclassified observations/total observations in the Test data set
+
+As sample size is large sample N= 19622 in the Training data set. 
+Thus it can be split into *subTraining* and *subTesting* to allow cross-validation.
+
+##Prediction Philosophy
+Decision tree and random forest algorithms will be used to do the prediction as these are known for their ability to classify data as per relevance.Prediction evaluations will be based on maximizing the accuracy and minimizing the out-of-sample error. Missing values will be discarded before prediction.The model with the highest accuracy will be chosen as our final model.
+
+
+#Codes and Report
+
+## Loading of required Libraries an packages and Setting Seed
+
+```{r Libs,warning=FALSE}
+
+library(caret)
+library(randomForest)
+library(rpart) 
+library(rpart.plot)
+library(RColorBrewer)
+library(rattle) 
+set.seed(1234)
+```
+
+## Data Loading
+
+```{r DataLoading}
+
+
+if (file.exists("pml-training.csv")) {
+        training <- read.csv("pml-training.csv", na.strings=c("NA","#DIV/0!",""))
+}else { 
+        training <- read.csv("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv",na.strings=c("NA","#DIV/0!",""))
+        }                           
+
+ 
+
+if (file.exists("pml-testing.csv")) {
+        testing <- read.csv("pml-testing.csv", na.strings=c("NA","#DIV/0!",""))
+} else { 
+       testing <- read.csv("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv",na.strings=c("NA","#DIV/0!",""))
+}   
+
+```
+
+
+##Data Cleaning
+
+Removing the columns majority NA values and also with Near Zero variance in values.
+
+```{r RemoveIrrelevant_Data_TrainingSet}
+##the variance pattern of all the columns including those near Zero variance or not near Zero variance are as below
+DataNZV <- nearZeroVar(training, saveMetrics=TRUE)
+##Segregate the ones with only near Zero variance value
+DataNZV<-DataNZV[(DataNZV$nzv==TRUE),]
+##near Zero variance columns are as below
+RemoveCols<-c(rownames(DataNZV))
+##removing the near Zero variance values from the training dataset
+training<-training[,!(names(training) %in% RemoveCols)]
+
+
+##calculating % of NAs in each column
+maxNA<-sapply(training, function(x) (sum(is.na(x))/length(x))*100)
+maxNA<-data.frame(maxNA)
+maxNA<-data.frame(VarName=rownames(maxNA),NAVals=maxNA$maxNA)
+maxNA<-maxNA[maxNA$NAVals<=60,]
+training<-training[,names(training)%in%maxNA$VarName]
+
+##Removing the Serial No Column X or the first Column
+training<-training[,-1]
+
+dim(training)
+```
+
+
+##Partioning the training data set into two Subsets
+
+Partioning Training data set into two data sets, 75% for Training, 25% for cross validation withing sample testing:
+
+```{r Subsetting Training Dataset}
+
+inTrain <- createDataPartition(y=training$classe, p=0.75, list=FALSE)
+training75 <- training[inTrain, ]; training25 <- training[-inTrain, ]
+
+##Training Set
+dim(training75); 
+
+##Training Test Set
+dim(training25)
+
+###Plotting a Histogram
+plot(training75$classe, col="green", main="Histogram of output variable classe ", xlab="classe", ylab="Frequency")
+```
+
+
+The Histogram of Classe variable shows that the frequency is almost similar for the mistaken methods of Dumbell press(i.e. levels B,C,D,E). However the prefect way of dumbell press(Level A) is the most frequent while level D is the least.
+
+
+##Applying ML Algorithm *Decision Tree* on training75 dataset
+
+```{r Decision Tree}
+ModDecisionTree<-rpart(classe~.,data=training75,method="class")
+
+##Plotting the model
+
+rpart.plot(ModDecisionTree, main="Classification Tree", extra=102, under=TRUE, faclen=0)
+
+```
+
+##Prediction using Decision Tree
+
+```{r Prediction Decision Tree}
+##predicting the model formed with training75% data set on the training25% dataset as inter sample cross validation
+
+predictDecisionTree <- predict(ModDecisionTree, training25, type = "class")
+
+## Checking the Confusion Matrix of the prediction
+
+confusionMatrix(predictDecisionTree, training25$classe)
+
+```
+
+
+
+##Applying ML Algorithm *Random Forest* on training75 dataset
+
+```{r RandomForest}
+ModRandomForest<-randomForest(classe~.,data=training75)
+
+```
+
+##Prediction using Random Forest
+
+```{r Prediction Random Forest}
+##predicting the model formed with training75% data set on the training25% dataset as inter sample cross validation
+
+predictRandomForest <- predict(ModRandomForest, training25, type = "class")
+
+## Checking the Confusion Matrix of the prediction
+
+confusionMatrix(predictRandomForest, training25$classe)
+
+```
+
+###Accuracy with Decision Tree
+
+```{r Accuracy Decision Tree}
+
+confusionMatrix(predictDecisionTree, training25$classe)$overall
+
+```
+
+###Accuracy with Random Forest
+
+```{r Accuracy RandomForest}
+
+confusionMatrix(predictRandomForest, training25$classe)$overall
+
+```
+
+
+### As Random Forest is very accurate and much better in accuracy over Decision Tree,we do the out of sample cross validation,i.e. Tesing on the *testing* Dataset with the Random Forest Model and state our final prediction
+
+
+###Final Cross Validation on Testing Dataset
+
+```{r FinalPrediction}
+##Taking the columns in Test Dataset,which are same as Training Dataset
+testing<-testing[,names(training25)[-58]]
+
+##In order to coerce the Variable Data Types into training Set data Types,we do an easy R-bind of External Test Data Set with Train25% Dataset(we bind only 1st two rows of Training25% Dataset with the Tesint Dataset)
+testing<-rbind(testing,training25[1:2,1:57])
+
+## now we again de-Bind,i.e. remove these 2 rows from training25 dataset and make the Testing Dataset as original,but with Variables coerced and similar as the Training Dataset
+testing<-testing[1:20,]
+
+##The above is done so that the prediction is done by the rf-model accurately and also if there is any anomaly of Data Type in the columns of Test Dataset from Training Dataset(as here we have taken the Test Dataset from a different link than Training Dataset)
+
+predictRandomForestTestDataset <- predict(ModRandomForest, testing,type="class")
+
+predictRandomForestTestDataset
+
+```
+
+###Generating Files for Submission in assignment
+
+```{r FileGeneration}
+
+pml_write_files = function(x){
+  n = length(x)
+  for(i in 1:n){
+    filename = paste0("problem_id_",i,".txt")
+    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+  }
+}
+
+pml_write_files(predictRandomForestTestDataset)
+
+```
+
