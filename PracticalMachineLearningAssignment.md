@@ -204,7 +204,7 @@ ModDecisionTree<-rpart(classe~.,data=training75,method="class")
 rpart.plot(ModDecisionTree, main="Classification Tree", extra=102, under=TRUE, faclen=0)
 ```
 
-![Decision Tree Model for the Classe Variable](figures/Decision Tree-1.png)
+![Decision Tree Model for the Classe Variable](figures/Decision%20Tree-1.png)
 
 Prediction using Decision Tree
 ------------------------------
