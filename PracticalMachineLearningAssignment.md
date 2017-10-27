@@ -204,7 +204,7 @@ ModDecisionTree<-rpart(classe~.,data=training75,method="class")
 rpart.plot(ModDecisionTree, main="Classification Tree", extra=102, under=TRUE, faclen=0)
 ```
 
-![](figures/figure-markdown_github/Decision%20Tree-1.png)
+![](figures/Decision%20Tree-1.png)
 
 Prediction using Decision Tree for out of Sample Validation on 25% Training Dataset
 -----------------------------------------------------------------------------------
