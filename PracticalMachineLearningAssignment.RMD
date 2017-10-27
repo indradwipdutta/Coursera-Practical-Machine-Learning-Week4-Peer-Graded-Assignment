@@ -175,7 +175,7 @@ rpart.plot(ModDecisionTree, main="Classification Tree", extra=102, under=TRUE, f
 
 ```
 
-##Prediction using Decision Tree
+##Prediction using Decision Tree for out of Sample Validation on 25% Training Dataset
 
 ```{r Prediction Decision Tree}
 ##predicting the model formed with training75% data set on the training25% dataset as inter sample cross validation
@@ -190,7 +190,7 @@ confusionMatrix(predictDecisionTree, training25$classe)
 
 
 
-##Applying ML Algorithm *Random Forest* on training75 dataset
+##Applying ML Algorithm *Random Forest* on training75 dataset for out of Sample Cross Validation on 25% Training Dataset
 
 ```{r RandomForest}
 ModRandomForest<-randomForest(classe~.,data=training75)
@@ -210,7 +210,7 @@ confusionMatrix(predictRandomForest, training25$classe)
 
 ```
 
-###Accuracy with Decision Tree
+###Accuracy with Decision Tree for out of Sample Cross Validation on 25% Training Dataset
 
 ```{r Accuracy Decision Tree}
 
@@ -218,7 +218,8 @@ confusionMatrix(predictDecisionTree, training25$classe)$overall
 
 ```
 
-###Accuracy with Random Forest
+###Accuracy with Random Forest out of Sample Cross Validation on 25% Training Dataset
+
 
 ```{r Accuracy RandomForest}
 
@@ -227,7 +228,9 @@ confusionMatrix(predictRandomForest, training25$classe)$overall
 ```
 
 
-### As Random Forest is very accurate and much better in accuracy over Decision Tree,we do the out of sample cross validation,i.e. Tesing on the *testing* Dataset with the Random Forest Model and state our final prediction
+### As Random Forest is very accurate and much better in accuracy over Decision Tree,we do the out of sample cross validation,i.e. Tesing on the *testing* Dataset with the Random Forest Model and state our final prediction.
+
+### I expect more than 98% Accuracy and only 2 % error in the Out of sample Test as the out of sample cross validation above with 25 % Dataset yielded more than 99 % accuracy
 
 
 ###Final Cross Validation on Testing Dataset
