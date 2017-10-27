@@ -26,18 +26,18 @@ It is now possible to collect a large amount of data about personal activity Usi
 
 In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://web.archive.org/web/20161224072740/http:/groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset).
 
-##Data
+## Data
 
-###The training data for this project are available here:
+### The training data for this project are available here:
 
 https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv
 
-###The test data are available here:
+### The test data are available here:
 
 https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
 
 
-##Brief Description of Data
+## Brief Description of Data
 
 *as from the HAR Dataset from the paper "Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013."*
 
@@ -55,10 +55,10 @@ The outcome variable *classe*, is a factor with 5 levels. Six young health parti
 
 Class A corresponds to the specified execution of the exercise, while the other 4 classes correspond to common mistakes." 
 
-##Cross-validation
+## Cross-validation
 Performed by subsampling training data set randomly without replacement into 2 subsamples: subTraining data (75% of the original Training data set) and subTesting data (25%). The Models are fitted on the subTraining data set, and tested on the subTesting data. The most accurate model used to test the original Testing data set.
 
-##Expected out-of-sample error
+## Expected out-of-sample error
 
 outcome variable "classe" is an unordered factor variable. Thus, we can choose our error type as Accuracy
 
@@ -75,7 +75,7 @@ Thus it can be split into *subTraining* and *subTesting* to allow cross-validati
 Decision tree and random forest algorithms will be used to do the prediction as these are known for their ability to classify data as per relevance.Prediction evaluations will be based on maximizing the accuracy and minimizing the out-of-sample error. Missing values will be discarded before prediction.The model with the highest accuracy will be chosen as our final model.
 
 
-#Codes and Report
+# Codes and Report
 
 ## Loading of required Libraries an packages and Setting Seed
 
@@ -112,7 +112,7 @@ if (file.exists("pml-testing.csv")) {
 ```
 
 
-##Data Cleaning
+## Data Cleaning
 
 Removing the columns majority NA values and also with Near Zero variance in values.
 
@@ -141,7 +141,7 @@ dim(training)
 ```
 
 
-##Partioning the training data set into two Subsets
+## Partioning the training data set into two Subsets
 
 Partioning Training data set into two data sets, 75% for Training, 25% for cross validation withing sample testing:
 
@@ -164,7 +164,7 @@ plot(training75$classe, col="green", main="Histogram of output variable classe "
 The Histogram of Classe variable shows that the frequency is almost similar for the mistaken methods of Dumbell press(i.e. levels B,C,D,E). However the prefect way of dumbell press(Level A) is the most frequent while level D is the least.
 
 
-##Applying ML Algorithm *Decision Tree* on training75 dataset
+## Applying ML Algorithm *Decision Tree* on training75 dataset
 
 ```{r Decision Tree}
 ModDecisionTree<-rpart(classe~.,data=training75,method="class")
@@ -175,7 +175,7 @@ rpart.plot(ModDecisionTree, main="Classification Tree", extra=102, under=TRUE, f
 
 ```
 
-##Prediction using Decision Tree for out of Sample Validation on 25% Training Dataset
+## Prediction using Decision Tree for out of Sample Validation on 25% Training Dataset
 
 ```{r Prediction Decision Tree}
 ##predicting the model formed with training75% data set on the training25% dataset as inter sample cross validation
@@ -190,14 +190,14 @@ confusionMatrix(predictDecisionTree, training25$classe)
 
 
 
-##Applying ML Algorithm *Random Forest* on training75 dataset for out of Sample Cross Validation on 25% Training Dataset
+## Applying ML Algorithm *Random Forest* on training75 dataset for out of Sample Cross Validation on 25% Training Dataset
 
 ```{r RandomForest}
 ModRandomForest<-randomForest(classe~.,data=training75)
 
 ```
 
-##Prediction using Random Forest
+## Prediction using Random Forest
 
 ```{r Prediction Random Forest}
 ##predicting the model formed with training75% data set on the training25% dataset as inter sample cross validation
@@ -210,7 +210,7 @@ confusionMatrix(predictRandomForest, training25$classe)
 
 ```
 
-###Accuracy with Decision Tree for out of Sample Cross Validation on 25% Training Dataset
+### Accuracy with Decision Tree for out of Sample Cross Validation on 25% Training Dataset
 
 ```{r Accuracy Decision Tree}
 
@@ -218,7 +218,7 @@ confusionMatrix(predictDecisionTree, training25$classe)$overall
 
 ```
 
-###Accuracy with Random Forest out of Sample Cross Validation on 25% Training Dataset
+### Accuracy with Random Forest out of Sample Cross Validation on 25% Training Dataset
 
 
 ```{r Accuracy RandomForest}
@@ -233,7 +233,7 @@ confusionMatrix(predictRandomForest, training25$classe)$overall
 ### I expect more than 98% Accuracy and only 2 % error in the Out of sample Test as the out of sample cross validation above with 25 % Dataset yielded more than 99 % accuracy
 
 
-###Final Cross Validation on Testing Dataset
+### Final Cross Validation on Testing Dataset
 
 ```{r FinalPrediction}
 ##Taking the columns in Test Dataset,which are same as Training Dataset
@@ -253,7 +253,7 @@ predictRandomForestTestDataset
 
 ```
 
-###Generating Files for Submission in assignment
+### Generating Files for Submission in assignment
 
 ```{r FileGeneration}
 
