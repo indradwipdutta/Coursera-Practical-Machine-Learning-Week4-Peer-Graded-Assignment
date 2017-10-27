@@ -1,1 +1,6 @@
 
+These 20 .txt files have been auto generated from .RMD code,when Knittr has been run on the .RMD.
+
+These files contains the answers to the Quiz relating to the assignment.
+
+These are actually the predictions made by the model I prepared for this assignment.
